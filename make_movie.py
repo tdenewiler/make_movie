@@ -56,7 +56,7 @@ class MakeMovie():
             font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 120)
             in_date = datetime.strptime(timestamp, '%Y%m%d')
             out_date = in_date.strftime('%B %d, %Y')
-            draw.text((100, 1000), out_date, (255,255,255), font=font)
+            draw.text((100, 1100), out_date, (255,255,255), font=font)
             new_name = image[len(source_directory):]
             new_name = new_image_directory+'/'+new_name
             new_image.save(new_name)
