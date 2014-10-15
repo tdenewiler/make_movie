@@ -19,7 +19,7 @@ from datetime import datetime
 from time import strptime
 from operator import itemgetter
 import collections
-from pprint import pprint
+from shutil import copyfile
 
 class RenameFileWithDateTime():
     def __init__(self):
@@ -29,7 +29,7 @@ class RenameFileWithDateTime():
         options, args = parser.parse_args(sys.argv)
         source_dir = options.source_directory
         new_image_directory = options.tmp_directory
-        num_files = len([name for name in os.listdir(source_dir) if os.path.isfile(name)])
+        num_files = len(os.walk(source_dir).next()[2])
 
         if num_files > 0:
             self.create_files(source_dir, new_image_directory)
@@ -45,24 +45,27 @@ class RenameFileWithDateTime():
                 if ext not in valid_extensions:
                     continue
 
-                current_image = Image.open(source_dir+filename)
                 print 'Opening %s' % (filename)
-                info = current_image._getexif()
-                if 36867 in info:
-                    if info[272] == 'HTC6525LVW':
-                        print 'info[36867] =', info[36867]
-                        new_filename = str(info[36867]).replace(':', '').upper()
-                        new_filename = new_filename.replace(' ', '_')
+                if os.path.isfile(source_dir + filename):
+                    current_image = Image.open(source_dir+filename)
+                    info = current_image._getexif()
+                    if 36867 in info:
+                        if info[272] == 'HTC6525LVW':
+                            print 'info[36867] =', info[36867]
+                            new_filename = str(info[36867]).replace(':', '').upper()
+                            new_filename = new_filename.replace(' ', '_')
+                        else:
+                            new_filename = str(info[36867]).replace(':', '')[:-7].upper()
                     else:
-                        new_filename = str(info[36867]).replace(':', '')[:-7].upper()
+                        new_filename = str(info[306]).replace(':', '')[:-7].upper()
+                    new_filename = tmp_dir + '/' + 'IMG_' + new_filename + '.jpg'
+                    print 'Original filename = %s, new filename = %s' % (filename, new_filename)
+                    try:
+                        copyfile(source_dir+'/'+filename, new_filename)
+                    except:
+                        print 'Exception caught renaming %s --> %s' % (filename, new_filename)
                 else:
-                    new_filename = str(info[306]).replace(':', '')[:-7].upper()
-                new_filename = tmp_dir + '/' + 'IMG_' + new_filename + '.jpg'
-                print 'Original filename = %s, new filename = %s' % (filename, new_filename)
-                try:
-                    os.rename(source_dir+'/'+filename, new_filename)
-                except:
-                    print 'Exception caught renaming %s --> %s' % (filename, new_filename)
+                    print '%s is not a file, skipping' % (filename)
                 print '*****'
 
 if __name__ == '__main__':
