@@ -92,6 +92,8 @@ class MakeMovie():
                 info = current_image._getexif()
                 if 36867 in info:
                     timestamp = str(info[36867]).replace(':', '')[:-7].upper()
+                elif 36868 in info:
+                    timestamp = str(info[36868]).replace(':', '')[:-7].upper()
                 else:
                     timestamp = str(info[306]).replace(':', '')[:-7].upper()
                 image_names[timestamp] = source_dir+filename
