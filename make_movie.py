@@ -15,6 +15,7 @@ import subprocess
 from datetime import datetime
 from operator import itemgetter
 import collections
+from mutagen.mp3 import MP3
 
 class MakeMovie(object):
     '''
@@ -39,11 +40,15 @@ class MakeMovie(object):
         parser.add_option("-e", "--max_height", dest="max_height",
             help="Maximum height of output video. Default to 1280.",
             default=1280)
+        parser.add_option("-m", "--music", dest="music",
+            help="Name of audio file to add to video.",
+            default='')
         options, dummy = parser.parse_args(sys.argv)
         source_dir = options.source_directory
         new_image_directory = options.tmp_directory
         absolute_max_width = options.max_width
         absolute_max_height = options.max_height
+        fps = options.fps
 
         image_names = self.get_image_names(source_dir)
         size = self.get_max_image_resolution(image_names,
@@ -52,15 +57,27 @@ class MakeMovie(object):
             (len(image_names), size[0], size[1])
         self.add_border_to_images(image_names, source_dir, new_image_directory,
             size)
-        self.make_movie(new_image_directory, size, options.fps,
+        if options.music != '':
+            print 'Adding soundtrack: {}'.format(options.music)
+            audio = MP3(options.music)
+            print 'song length = {}s'.format(audio.info.length)
+            fps = len(image_names) / audio.info.length
+            print 'fps = {}'.format(fps)
+
+        self.make_movie(new_image_directory, size, fps, options.music,
             options.output_filename)
+        if options.music != '':
+            self.add_music(options.output_filename, options.music)
 
     @classmethod
+    # pylint: disable=too-many-locals
     def add_border_to_images(cls, image_list, source_directory,
         new_image_directory, size):
+    # pylint: enable=too-many-locals
         '''
         Add border to images to make them all the same size.
         '''
+        img_num = 1
         for timestamp, image in image_list.iteritems():
             new_image = Image.new("RGB", size)
             orig_image = Image.open(image)
@@ -82,8 +99,10 @@ class MakeMovie(object):
             date = date.strftime('%B %d, %Y')
             draw.text((100, 1100), date, (255, 255, 255), font=font)
             new_name = image[len(source_directory):]
-            new_name = new_image_directory + '/' + new_name
+            new_name = new_image_directory + '/image_' + str(img_num).zfill(5) \
+                + '.jpg'
             new_image.save(new_name)
+            img_num += 1
 
     @classmethod
     def get_max_image_resolution(cls, image_list, absolute_max_width,
@@ -122,9 +141,9 @@ class MakeMovie(object):
                     continue
 
                 current_image = Image.open(source_dir+filename)
-                # pylint: disable=W0212
+                # pylint: disable=protected-access
                 info = current_image._getexif()
-                # pylint: enable=W0212
+                # pylint: enable=protected-access
                 if 36867 in info:
                     timestamp = str(info[36867]).replace(':', '')[:-7].upper()
                 elif 36868 in info:
@@ -138,7 +157,9 @@ class MakeMovie(object):
         return image_names_sorted
 
     @classmethod
-    def make_movie(cls, image_dir, size, fps, output_filename):
+    # pylint: disable=too-many-arguments
+    def make_movie(cls, image_dir, size, fps, music, output_filename):
+    # pylint: enable=too-many-arguments
         '''
         Create a movie using images in a specified directory.
         '''
@@ -152,8 +173,44 @@ class MakeMovie(object):
             'bitrate=1200:threads=2',
             '-of',
             'rawvideo',
+            '-audiofile',
+            music,
+            '-oac',
+            'copy',
             '-o',
             output_filename)
+
+        command = ('avconv',
+            '-r',
+            str(fps),
+            '-i',
+            'tmp/image_%05d.jpg',
+            '-b:v',
+            '1000k',
+            output_filename)
+
+        print "\nabout to execute:\n%s\n" % ' '.join(command)
+        subprocess.check_call(command)
+
+    @classmethod
+    def add_music(cls, output_filename, music):
+        """
+        Add a song as background music for video.
+        """
+        command = ('avconv',
+            '-i',
+            output_filename,
+            '-i',
+            music,
+            '-map',
+            '0:0',
+            '-map',
+            '1:0',
+            '-vcodec',
+            'copy',
+            '-acodec',
+            'copy',
+            'music-' + output_filename)
 
         print "\nabout to execute:\n%s\n" % ' '.join(command)
         subprocess.check_call(command)
