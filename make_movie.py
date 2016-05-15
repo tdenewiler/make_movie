@@ -144,6 +144,9 @@ class MakeMovie(object):
                 # pylint: disable=protected-access
                 info = current_image._getexif()
                 # pylint: enable=protected-access
+                if info is None:
+                    print '{} has no metadata information.'.format(filename)
+                    continue
                 if 36867 in info:
                     timestamp = str(info[36867]).replace(':', '')[:-7].upper()
                 elif 36868 in info:
