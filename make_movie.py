@@ -33,7 +33,7 @@ class MakeMovie(object):
             help="Frames per second for the output movie. Default to 2.",
             default=2)
         parser.add_option("-o", "--output_filename", dest="output_filename",
-            help="Output filename. Default to movie.", default='movie')
+            help="Output filename. Default to movie.", default='movie.mkv')
         parser.add_option("-w", "--max_width", dest="max_width",
             help="Maximum width of output video. Default to 1920.",
             default=1920)
