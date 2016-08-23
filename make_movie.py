@@ -43,6 +43,9 @@ class MakeMovie(object):
         parser.add_option("-m", "--music", dest="music",
             help="Name of audio file to add to video.",
             default='')
+        parser.add_option("-k", "--skip", dest="skip",
+            help="Skip scaling images and use existing temporary images.",
+            default=False)
         options, dummy = parser.parse_args(sys.argv)
         source_dir = options.source_directory
         new_image_directory = options.tmp_directory
@@ -55,8 +58,9 @@ class MakeMovie(object):
             absolute_max_width, absolute_max_height)
         print 'Found %d images and setting resolution to (w, h) = (%d, %d).' % \
             (len(image_names), size[0], size[1])
-        self.add_border_to_images(image_names, source_dir, new_image_directory,
-            size)
+        if not options.skip:
+            self.add_border_to_images(image_names, source_dir,
+                    new_image_directory, size)
         if options.music != '':
             print 'Adding soundtrack: {}'.format(options.music)
             audio = MP3(options.music)
