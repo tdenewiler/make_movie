@@ -7,7 +7,6 @@ Requires adding border to make all images the same resolution.
 '''
 
 from __future__ import division
-from PIL import Image, ImageFont, ImageDraw
 from optparse import OptionParser
 import os
 import sys
@@ -15,6 +14,7 @@ import subprocess
 from datetime import datetime
 from operator import itemgetter
 import collections
+from PIL import Image, ImageFont, ImageDraw
 from mutagen.mp3 import MP3
 
 class MakeMovie(object):
@@ -24,28 +24,29 @@ class MakeMovie(object):
     def __init__(self):
         parser = OptionParser()
         parser.add_option("-s", "--source_dir", dest="source_directory",
-            help="Directory containing original images. \
-            Default to current directory.", default='.')
+                          help="Directory containing original images. \
+                                Default to current directory.", default='.')
         parser.add_option("-t", "--tmp_dir", dest="tmp_directory",
-            help="Directory containing temporary images. Default to tmp.",
-            default='tmp')
+                          help="Directory containing temporary images. Default \
+                                to tmp.", default='tmp')
         parser.add_option("-f", "--frame_rate", dest="fps",
-            help="Frames per second for the output movie. Default to 2.",
-            default=2)
+                          help="Frames per second for the output movie. \
+                                Default to 2.", default=2)
         parser.add_option("-o", "--output_filename", dest="output_filename",
-            help="Output filename. Default to movie.", default='movie.mkv')
+                          help="Output filename. Default to movie.",
+                          default='movie.mkv')
         parser.add_option("-w", "--max_width", dest="max_width",
-            help="Maximum width of output video. Default to 1920.",
-            default=1920)
+                          help="Maximum width of output video. Default to \
+                                1920.", default=1920)
         parser.add_option("-e", "--max_height", dest="max_height",
-            help="Maximum height of output video. Default to 1280.",
-            default=1280)
+                          help="Maximum height of output video. Default to \
+                                1280.", default=1280)
         parser.add_option("-m", "--music", dest="music",
-            help="Name of audio file to add to video.",
-            default='')
+                          help="Name of audio file to add to video.",
+                          default='')
         parser.add_option("-k", "--skip", dest="skip",
-            help="Skip scaling images and use existing temporary images.",
-            default=False)
+                          help="Skip scaling images and use existing temporary \
+                                images.", default=False)
         options, dummy = parser.parse_args(sys.argv)
         source_dir = options.source_directory
         new_image_directory = options.tmp_directory
@@ -55,12 +56,13 @@ class MakeMovie(object):
 
         image_names = self.get_image_names(source_dir)
         size = self.get_max_image_resolution(image_names,
-            absolute_max_width, absolute_max_height)
+                                             absolute_max_width,
+                                             absolute_max_height)
         print 'Found %d images and setting resolution to (w, h) = (%d, %d).' % \
             (len(image_names), size[0], size[1])
         if not options.skip:
             self.add_border_to_images(image_names, source_dir,
-                    new_image_directory, size)
+                                      new_image_directory, size)
         if options.music != '':
             print 'Adding soundtrack: {}'.format(options.music)
             audio = MP3(options.music)
@@ -68,15 +70,14 @@ class MakeMovie(object):
             fps = len(image_names) / audio.info.length
             print 'fps = {}'.format(fps)
 
-        self.make_movie(new_image_directory, size, fps, options.music,
-            options.output_filename)
-        if options.music != '':
+        self.make_movie(fps, options.output_filename)
+        if options.music is not '':
             self.add_music(options.output_filename, options.music)
 
     @classmethod
     # pylint: disable=too-many-locals
     def add_border_to_images(cls, image_list, source_directory,
-        new_image_directory, size):
+                             new_image_directory, size):
     # pylint: enable=too-many-locals
         '''
         Add border to images to make them all the same size.
@@ -89,13 +90,16 @@ class MakeMovie(object):
             scale_ratio = 1.0
             if orig_size[0] > size[0] or orig_size[1] > size[1]:
                 scale_ratio = min(size[0] / orig_size[0],
-                    size[1] / orig_size[1])
+                                  size[1] / orig_size[1])
                 orig_image = orig_image.resize(((int(orig_size[0] *
-                    scale_ratio)), int(orig_size[1] * scale_ratio)),
-                    Image.ANTIALIAS)
+                                                     scale_ratio)),
+                                                int(orig_size[1] *
+                                                    scale_ratio)),
+                                               Image.ANTIALIAS)
             new_image.paste(orig_image, (int((size[0] - orig_size[0] *
-                scale_ratio) / 2), int((size[1] - orig_size[1] *
-                scale_ratio) / 2)))
+                                              scale_ratio) / 2),
+                                         int((size[1] - orig_size[1] *
+                                              scale_ratio) / 2)))
             draw = ImageDraw.Draw(new_image)
             font = ImageFont.truetype \
                 ("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 120)
@@ -110,7 +114,7 @@ class MakeMovie(object):
 
     @classmethod
     def get_max_image_resolution(cls, image_list, absolute_max_width,
-        absolute_max_height):
+                                 absolute_max_height):
         '''
         From a list of images find the maximum height and width.
         '''
@@ -160,41 +164,22 @@ class MakeMovie(object):
                 image_names[timestamp] = source_dir+filename
 
         image_names_sorted = collections.OrderedDict(sorted(image_names.items(),
-            key=itemgetter(0)))
+                                                            key=itemgetter(0)))
         return image_names_sorted
 
     @classmethod
-    # pylint: disable=too-many-arguments
-    def make_movie(cls, image_dir, size, fps, music, output_filename):
-    # pylint: enable=too-many-arguments
+    def make_movie(cls, fps, output_filename):
         '''
         Create a movie using images in a specified directory.
         '''
-        command = ('mencoder',
-            'mf://'+image_dir+'/*.jpg',
-            '-mf',
-            'type=jpg:w='+str(size[0])+':h='+str(size[1])+':fps='+str(fps),
-            '-ovc',
-            'x264',
-            '-x264encopts',
-            'bitrate=1200:threads=2',
-            '-of',
-            'rawvideo',
-            '-audiofile',
-            music,
-            '-oac',
-            'copy',
-            '-o',
-            output_filename)
-
         command = ('avconv',
-            '-r',
-            str(fps),
-            '-i',
-            'tmp/image_%05d.jpg',
-            '-b:v',
-            '1000k',
-            output_filename)
+                   '-r',
+                   str(fps),
+                   '-i',
+                   'tmp/image_%05d.jpg',
+                   '-b:v',
+                   '1000k',
+                   output_filename)
 
         print "\nabout to execute:\n%s\n" % ' '.join(command)
         subprocess.check_call(command)
@@ -205,19 +190,19 @@ class MakeMovie(object):
         Add a song as background music for video.
         """
         command = ('avconv',
-            '-i',
-            output_filename,
-            '-i',
-            music,
-            '-map',
-            '0:0',
-            '-map',
-            '1:0',
-            '-vcodec',
-            'copy',
-            '-acodec',
-            'copy',
-            'music-' + output_filename)
+                   '-i',
+                   output_filename,
+                   '-i',
+                   music,
+                   '-map',
+                   '0:0',
+                   '-map',
+                   '1:0',
+                   '-vcodec',
+                   'copy',
+                   '-acodec',
+                   'copy',
+                   'music-' + output_filename)
 
         print "\nabout to execute:\n%s\n" % ' '.join(command)
         subprocess.check_call(command)
