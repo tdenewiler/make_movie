@@ -184,6 +184,16 @@ class MakeMovie(object):
     def add_music(cls, output_filename, music):
         """
         Add a song as background music for video.
+
+        To make a longer song I like to merge my kids favorite songs together.
+        Instructions at
+        http://www.practicatechnical.com/computer-tips/ubuntu-tips/
+        how-to-merge-multiple-mp3-files
+        were most helpful:
+
+        mp3wrap tmp.mp3 1.mp3 2.mp3 3.mp3
+        ffmpeg -i tmp_MP3WRAP.mp3 -acodec copy all.mp3 && rm tmp_MP3WRAP.mp3
+        id3cp 1.mp3 all.mp3
         """
         command = ('avconv',
                    '-i',
