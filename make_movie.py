@@ -40,7 +40,7 @@ class MakeMovie(object):
                                 1920.", default=1920)
         parser.add_option("-e", "--max_height", dest="max_height",
                           help="Maximum height of output video. Default to \
-                                1280.", default=1280)
+                                1080.", default=1080)
         parser.add_option("-m", "--music", dest="music",
                           help="Name of audio file to add to video.",
                           default='')
@@ -103,7 +103,7 @@ class MakeMovie(object):
                 ("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 120)
             date = datetime.strptime(timestamp, '%Y%m%d')
             date = date.strftime('%B %d, %Y')
-            draw.text((100, 1100), date, (255, 255, 255), font=font)
+            draw.text((100, 940), date, (255, 255, 255), font=font)
             new_name = image[len(source_directory):]
             new_name = new_image_directory + '/image_' + str(img_num).zfill(5) \
                 + '.jpg'
