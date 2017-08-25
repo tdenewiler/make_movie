@@ -75,10 +75,8 @@ class MakeMovie(object):
             self.add_music(options.output_filename, options.music)
 
     @classmethod
-    # pylint: disable=too-many-locals
-    def add_border_to_images(cls, image_list, source_directory,
+    def add_border_to_images(cls, image_list, source_directory, # pylint: disable=too-many-locals
                              new_image_directory, size):
-    # pylint: enable=too-many-locals
         '''
         Add border to images to make them all the same size.
         '''
@@ -149,9 +147,7 @@ class MakeMovie(object):
                     continue
 
                 current_image = Image.open(source_dir+filename)
-                # pylint: disable=protected-access
-                info = current_image._getexif()
-                # pylint: enable=protected-access
+                info = current_image._getexif() # pylint: disable=protected-access
                 if info is None:
                     print '{} has no metadata information.'.format(filename)
                     continue
