@@ -17,6 +17,7 @@ import collections
 from PIL import Image, ImageFont, ImageDraw
 from mutagen.mp3 import MP3
 
+
 class MakeMovie(object):
     '''
     Make a movie using image files.
@@ -58,8 +59,11 @@ class MakeMovie(object):
         size = self.get_max_image_resolution(image_names,
                                              absolute_max_width,
                                              absolute_max_height)
-        print 'Found %d images and setting resolution to (w, h) = (%d, %d).' % \
-            (len(image_names), size[0], size[1])
+        print 'Found {} images and setting resolution to (w, h) = ({}, {}).'. \
+            format(len(image_names), size[0], size[1])
+
+        # self.save_landscape_images(image_names, new_image_directory)
+
         if not options.skip:
             self.add_border_to_images(image_names, source_dir,
                                       new_image_directory, size)
@@ -75,7 +79,21 @@ class MakeMovie(object):
             self.add_music(options.output_filename, options.music)
 
     @classmethod
-    def add_border_to_images(cls, image_list, source_directory, # pylint: disable=too-many-locals
+    def save_landscape_images(cls, image_list, new_image_directory):
+        '''
+        Save any images that are in landscape mode (width > height).
+        '''
+        for _, image in image_list.iteritems():
+            orig_image = Image.open(image)
+            size = orig_image.size
+            if size[0] > size[1]:
+                new_name = new_image_directory + '/' + os.path.basename(image)
+                print 'new_name: {}'.format(new_name)
+                orig_image.save(new_name)
+
+# pylint: disable=too-many-locals
+    @classmethod
+    def add_border_to_images(cls, image_list, source_directory,
                              new_image_directory, size):
         '''
         Add border to images to make them all the same size.
@@ -99,16 +117,17 @@ class MakeMovie(object):
                                          int((size[1] - orig_size[1] *
                                               scale_ratio) / 2)))
             draw = ImageDraw.Draw(new_image)
-            font = ImageFont.truetype \
-                ("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 120)
+            font = ImageFont.truetype(
+                "/usr/share/fonts/truetype/freefont/FreeSans.ttf", 120)
             date = datetime.strptime(timestamp, '%Y%m%d')
             date = date.strftime('%B %d, %Y')
             draw.text((100, 940), date, (255, 255, 255), font=font)
             new_name = image[len(source_directory):]
-            new_name = new_image_directory + '/image_' + str(img_num).zfill(5) \
-                + '.jpg'
+            new_name = new_image_directory + '/image_' + \
+                str(img_num).zfill(5) + '.jpg'
             new_image.save(new_name)
             img_num += 1
+# pylint: enable=too-many-locals
 
     @classmethod
     def get_max_image_resolution(cls, image_list, absolute_max_width,
@@ -147,7 +166,9 @@ class MakeMovie(object):
                     continue
 
                 current_image = Image.open(source_dir+filename)
-                info = current_image._getexif() # pylint: disable=protected-access
+# pylint: disable=protected-access
+                info = current_image._getexif()
+# pylint: enable=protected-access
                 if info is None:
                     print '{} has no metadata information.'.format(filename)
                     continue
@@ -156,11 +177,17 @@ class MakeMovie(object):
                 elif 36868 in info:
                     timestamp = str(info[36868]).replace(':', '')[:-7].upper()
                 else:
-                    timestamp = str(info[306]).replace(':', '')[:-7].upper()
+                    try:
+                        timestamp = \
+                                str(info[306]).replace(':', '')[:-7].upper()
+                    except KeyError as exc:
+                        print 'Exception for {}: {}'.format(filename, exc)
+                        continue
                 image_names[timestamp] = source_dir+filename
 
-        image_names_sorted = collections.OrderedDict(sorted(image_names.items(),
-                                                            key=itemgetter(0)))
+        image_names_sorted = \
+            collections.OrderedDict(sorted(image_names.items(),
+                                           key=itemgetter(0)))
         return image_names_sorted
 
     @classmethod
@@ -212,6 +239,7 @@ class MakeMovie(object):
 
         print "\nabout to execute:\n%s\n" % ' '.join(command)
         subprocess.check_call(command)
+
 
 if __name__ == '__main__':
     MakeMovie()
