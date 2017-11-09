@@ -68,11 +68,12 @@ class MakeMovie(object):
             self.add_border_to_images(image_names, source_dir,
                                       new_image_directory, size)
         if options.music != '':
-            print 'Adding soundtrack: {}'.format(options.music)
             audio = MP3(options.music)
-            print 'song length = {}s'.format(audio.info.length)
             fps = len(image_names) / audio.info.length
-            print 'fps = {}'.format(fps)
+            print 'Adding soundtrack {}, {}s, {} fps'.format(options.music,
+                                                             audio.info.length,
+                                                             fps)
+            return
 
         self.make_movie(fps, options.output_filename)
         if options.music is not '':
