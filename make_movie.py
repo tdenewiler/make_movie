@@ -29,7 +29,7 @@ class MakeMovie(object):
                                 Default to current directory.", default='.')
         parser.add_option("-t", "--tmp_dir", dest="tmp_directory",
                           help="Directory containing temporary images. Default \
-                                to tmp.", default='tmp')
+                                to tmp.", default='tmp/')
         parser.add_option("-f", "--frame_rate", dest="fps",
                           help="Frames per second for the output movie. \
                                 Default to 2.", default=2)
@@ -56,13 +56,13 @@ class MakeMovie(object):
         fps = options.fps
 
         image_names = self.get_image_names(source_dir)
+        # self.save_landscape_images(source_dir, new_image_directory)
+
         size = self.get_max_image_resolution(image_names,
                                              absolute_max_width,
                                              absolute_max_height)
         print 'Found {} images and setting resolution to (w, h) = ({}, {}).'. \
             format(len(image_names), size[0], size[1])
-
-        # self.save_landscape_images(image_names, new_image_directory)
 
         if not options.skip:
             self.add_border_to_images(image_names, source_dir,
@@ -80,17 +80,23 @@ class MakeMovie(object):
             self.add_music(options.output_filename, options.music)
 
     @classmethod
-    def save_landscape_images(cls, image_list, new_image_directory):
+    def save_landscape_images(cls, source_dir, new_image_directory):
         '''
         Save any images that are in landscape mode (width > height).
         '''
-        for _, image in image_list.iteritems():
-            orig_image = Image.open(image)
-            size = orig_image.size
-            if size[0] > size[1]:
-                new_name = new_image_directory + '/' + os.path.basename(image)
-                print 'new_name: {}'.format(new_name)
-                orig_image.save(new_name)
+        valid_extensions = ['png', 'jpg']
+        for dummy, dummy, files in os.walk(source_dir):
+            for image in files:
+                ext = image[-3:].lower()
+                if ext not in valid_extensions:
+                    continue
+
+                orig_image = Image.open(source_dir + image)
+                size = orig_image.size
+                if size[0] >= size[1]:
+                    new_name = new_image_directory + os.path.basename(image)
+                    print 'new_name: {}'.format(new_name)
+                    orig_image.save(new_name)
 
 # pylint: disable=too-many-locals
     @classmethod
@@ -124,7 +130,7 @@ class MakeMovie(object):
             date = date.strftime('%B %d, %Y')
             draw.text((100, 940), date, (255, 255, 255), font=font)
             new_name = image[len(source_directory):]
-            new_name = new_image_directory + '/image_' + \
+            new_name = new_image_directory + 'image_' + \
                 str(img_num).zfill(5) + '.jpg'
             new_image.save(new_name)
             img_num += 1
