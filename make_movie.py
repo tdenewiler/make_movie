@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 In a directory containing images create a time-lapse movie.
+
 Requires adding border to make all images the same resolution.
-'''
+"""
 
 from __future__ import division
 from optparse import OptionParser
@@ -19,10 +20,10 @@ from mutagen.mp3 import MP3
 
 
 class MakeMovie(object):
-    '''
-    Make a movie using image files.
-    '''
+    """Make a movie using image files."""
+
     def __init__(self):
+        """Get options and start making a movie."""
         parser = OptionParser()
         parser.add_option("-s", "--source_dir", dest="source_directory",
                           help="Directory containing original images. \
@@ -81,9 +82,7 @@ class MakeMovie(object):
 
     @classmethod
     def save_landscape_images(cls, source_dir, new_image_directory):
-        '''
-        Save any images that are in landscape mode (width > height).
-        '''
+        """Save any images that are in landscape mode (width > height)."""
         valid_extensions = ['png', 'jpg']
         for dummy, dummy, files in os.walk(source_dir):
             for image in files:
@@ -102,9 +101,7 @@ class MakeMovie(object):
     @classmethod
     def add_border_to_images(cls, image_list, source_directory,
                              new_image_directory, size):
-        '''
-        Add border to images to make them all the same size.
-        '''
+        """Add border to images to make them all the same size."""
         img_num = 1
         for timestamp, image in image_list.iteritems():
             new_image = Image.new("RGB", size)
@@ -139,9 +136,7 @@ class MakeMovie(object):
     @classmethod
     def get_max_image_resolution(cls, image_list, absolute_max_width,
                                  absolute_max_height):
-        '''
-        From a list of images find the maximum height and width.
-        '''
+        """From a list of images find the maximum height and width."""
         max_height = 0
         max_width = 0
         for dummy, image in image_list.iteritems():
@@ -161,9 +156,7 @@ class MakeMovie(object):
 
     @classmethod
     def get_image_names(cls, source_dir):
-        '''
-        Get the filenames of images in a directory.
-        '''
+        """Get the filenames of images in a directory."""
         valid_extensions = ['png', 'jpg']
         image_names = {}
         for dummy, dummy, files in os.walk(source_dir):
@@ -199,9 +192,7 @@ class MakeMovie(object):
 
     @classmethod
     def make_movie(cls, fps, output_filename):
-        '''
-        Create a movie using images in a specified directory.
-        '''
+        """Create a movie using images in a specified directory."""
         command = ('avconv',
                    '-r',
                    str(fps),
