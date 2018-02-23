@@ -70,7 +70,8 @@ class RenameFileWithDateTime(object):
                         new_filename.replace(' ', '_')
                 else:
                     new_filename = \
-                        str(info[36867]).replace(':', '')[:-7].upper()
+                        str(info[36867]).replace(':', '')[:-7].upper() + \
+                        '_' + str(info[36867]).replace(':', '')[9:16].upper()
             else:
                 new_filename = \
                     str(info[306]).replace(':', '')[:-7].upper()
