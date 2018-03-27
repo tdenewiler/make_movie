@@ -45,7 +45,7 @@ class MakeMovie(object):
                                 1080.", default=1080)
         parser.add_option("-m", "--music", dest="music",
                           help="Name of audio file to add to video.",
-                          default='')
+                          default=None)
         parser.add_option("-k", "--skip", dest="skip",
                           help="Skip scaling images and use existing temporary \
                                 images.", default=False)
@@ -68,17 +68,17 @@ class MakeMovie(object):
         if not options.skip:
             self.add_border_to_images(image_names, source_dir,
                                       new_image_directory, size)
-        if options.music != '':
+        if options.music is not None:
             audio = MP3(options.music)
             fps = len(image_names) / audio.info.length
             print 'Adding soundtrack {}, {}s, {} fps'.format(options.music,
                                                              audio.info.length,
                                                              fps)
-            return
 
-        self.make_movie(fps, options.output_filename)
-        if options.music is not '':
+        if options.music is not None:
             self.add_music(options.output_filename, options.music)
+        else:
+            self.make_movie(fps, options.output_filename)
 
     @classmethod
     def save_landscape_images(cls, source_dir, new_image_directory):
