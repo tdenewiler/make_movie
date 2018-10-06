@@ -75,10 +75,9 @@ class MakeMovie(object):
                                                              audio.info.length,
                                                              fps)
 
+        self.make_movie(fps, options.output_filename)
         if options.music is not None:
             self.add_music(options.output_filename, options.music)
-        else:
-            self.make_movie(fps, options.output_filename)
 
     @classmethod
     def save_landscape_images(cls, source_dir, new_image_directory):
