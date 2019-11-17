@@ -1,0 +1,11 @@
+levels:
+  local:
+    tool:
+      pycodestyle:
+        flags: ""
+      pydocstyle:
+        flags: ""
+      pyflakes:
+        flags: ""
+      pylint:
+        flags: ""
