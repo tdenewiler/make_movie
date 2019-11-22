@@ -1,5 +1,9 @@
 # Make Movie
 
+| Service | Status |
+| ------- | ------ |
+| Build   | [![Travis-CI](https://api.travis-ci.org/tdenewiler/make_movie.svg?branch=master)](https://travis-ci.org/tdenewiler/make_movie/branches) |
+
 This repository contains a Python script that will take all images in a directory and make a time-lapse movie.
 EXIF data is utilized to determine the date the picture was taken and that date is printed on each of the images in
 the movie.
