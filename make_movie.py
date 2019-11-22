@@ -78,7 +78,7 @@ class MakeMovie():
     def save_landscape_images(cls, source_dir, new_image_directory):
         """Save any images that are in landscape mode (width > height)."""
         valid_extensions = ['png', 'jpg']
-        for dummy, dummy, files in os.walk(source_dir):
+        for _, _, files in os.walk(source_dir):
             for image in files:
                 ext = image[-3:].lower()
                 if ext not in valid_extensions:
@@ -175,7 +175,7 @@ class MakeMovie():
         """Get the filenames of images in a directory."""
         valid_extensions = ['png', 'jpg']
         image_names = {}
-        for dummy, dummy, files in os.walk(source_dir):
+        for _, _, files in os.walk(source_dir):
             for filename in files:
                 ext = filename[-3:].lower()
                 if ext not in valid_extensions:

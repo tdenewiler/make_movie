@@ -42,12 +42,12 @@ class RenameFileWithDateTime():
         if num_files > 0:
             self.create_files(source_dir, new_image_directory)
         else:
-            print('No files in %s' % (source_dir))
+            print('No files in {}'.format(source_dir))
 
     def create_files(self, source_dir, tmp_dir):
         """Create the files using metadata."""
         valid_extensions = ['png', 'jpg']
-        for dummy, dummy, files in os.walk(source_dir):
+        for _, _, files in os.walk(source_dir):
             for filename in files:
                 ext = filename[-3:].lower()
                 if ext not in valid_extensions:
@@ -57,7 +57,7 @@ class RenameFileWithDateTime():
     @classmethod
     def create_file(cls, filename, source_dir, tmp_dir):
         """Create individaul files using metadata."""
-        print('Opening %s' % (filename))
+        print('Opening {}'.format(filename))
         if os.path.isfile(source_dir + filename):
             current_image = Image.open(source_dir+filename)
             # pylint: disable=W0212
@@ -87,7 +87,7 @@ class RenameFileWithDateTime():
                 print('Exception caught renaming {} --> '
                       '{}'.format(filename, new_filename))
         else:
-            print('%s is not a file, skipping' % (filename))
+            print('{} is not a file, skipping'.format(filename))
         print('*****')
 
 
