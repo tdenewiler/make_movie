@@ -19,4 +19,4 @@ install:
   - pip install statick
 
 script:
-  - mkdir statick_output; statick . statick_output --user-paths statick_config
+  - statick . --user-paths statick_config
