@@ -1,5 +1,9 @@
 # Make Movie
 
+| Service | Status |
+| ------- | ------ |
+| Build   | ![Unit Tests](https://github.com/tdenewiler/make_movie/workflows/Unit%20Tests/badge.svg) |
+
 This repository contains a Python script that will take all images in a directory and make a time-lapse movie.
 EXIF data is utilized to determine the date the picture was taken and that date is printed on each of the images in
 the movie.
