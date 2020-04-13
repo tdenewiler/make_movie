@@ -36,7 +36,7 @@ jobs:
       - name: Install tools (Linux)
         run: |
           sudo apt update
-          sudo apt install libav-tools
+          sudo apt install ffmpeg
           sudo apt install mp3wrap
 
       - name: Statick
