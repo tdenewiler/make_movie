@@ -41,4 +41,4 @@ jobs:
 
       - name: Statick
         run: |
-          statick . --user-paths statick_config
+          statick . --check --user-paths statick_config
