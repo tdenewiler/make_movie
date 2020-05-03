@@ -2,7 +2,6 @@
 levels:
   local:
     discovery:
-      - markdown
       - python
     tool:
       pycodestyle:
