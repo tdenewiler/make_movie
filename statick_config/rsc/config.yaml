@@ -1,11 +1,16 @@
+---
 levels:
   local:
+    discovery:
+      - markdown
+      - python
     tool:
       pycodestyle:
-        flags: ""
+        # Make line length consistent with default for black.
+        flags: "--max-line-length=88"
       pydocstyle:
         flags: ""
       pyflakes:
         flags: ""
       pylint:
-        flags: ""
+        flags: "--disable=bad-continuation"
