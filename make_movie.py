@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """Create a time-lapse movie from a directory of images."""
@@ -140,7 +140,7 @@ class MakeMovie:
         """Add border to images to make them all the same size."""
         img_num = 1
         progress = Bar("Processing", max=len(image_list))
-        for timestamp, image in image_list.iteritems():
+        for timestamp, image in image_list.items():
             new_image = Image.new("RGB", size)
             orig_image = Image.open(image)
             width, height = orig_image.size
@@ -198,7 +198,7 @@ class MakeMovie:
         """From a list of images find the maximum height and width."""
         max_height = 0
         max_width = 0
-        for dummy, image in image_list.iteritems():
+        for dummy, image in image_list.items():
             orig_image = Image.open(image)
             orig_size = orig_image.size
             if orig_size[0] > max_width:
