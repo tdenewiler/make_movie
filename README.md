@@ -1,8 +1,6 @@
 # Make Movie
 
-| Service | Status |
-| ------- | ------ |
-| Build   | ![Unit Tests](https://github.com/tdenewiler/make_movie/workflows/Unit%20Tests/badge.svg) |
+![Statick](https://github.com/tdenewiler/make_movie/workflows/Statick/badge.svg)
 
 This repository contains a Python script that will take all images in a directory and make a time-lapse movie.
 EXIF data is utilized to determine the date the picture was taken and that date is printed on each of the images in
@@ -32,3 +30,6 @@ That is why the `mp3wrap` package is listed in the apt dependencies in `install.
 mp3wrap output.mp3 input-1.mp3 input-2.mp3 input-3.mp3
 ```
 
+If `mp3wrap` does not work you can try Audacity.
+Some instructions that worked for me are at
+<https://www.how2shout.com/how-to/merge-multiple-audio-files-to-one-using-audacity.html>.
