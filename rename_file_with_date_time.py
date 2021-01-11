@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Rename images.
+"""Rename images.
 
-In a directory containing images rename the files to use
-the format of IMG_<YYYYMMDD>_<HHMMSSSS>.<ext>.
-Get the date and time from image metadata.
-Tested specifically with HTC One (M8) that uses numbers
-instead of date in filenames.
+In a directory containing images rename the files to use the format of
+IMG_<YYYYMMDD>_<HHMMSSSS>.<ext>. Get the date and time from image metadata. Tested
+specifically with HTC One (M8) that uses numbers instead of date in filenames.
 """
 
 
