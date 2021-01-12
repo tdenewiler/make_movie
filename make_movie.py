@@ -182,7 +182,7 @@ class MakeMovie:
             date = datetime.strptime(timestamp, "%Y%m%d")
             date = date.strftime("%B %d, %Y")
             draw.text((100, 940), date, (255, 255, 255), font=font)
-            new_name = image[len(source_directory):]
+            new_name = image[len(source_directory) :]  # NOLINT
             new_name = new_image_directory + "/image_" + str(img_num).zfill(5) + ".jpg"
             new_image.save(new_name)
             img_num += 1
@@ -267,8 +267,7 @@ class MakeMovie:
 
     @classmethod
     def add_music(cls, output_filename, music):
-        """
-        Add a song as background music for video.
+        """Add a song as background music for video.
 
         To make a longer song I like to merge my kids favorite songs together.
         Instructions at
