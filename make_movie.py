@@ -186,7 +186,8 @@ class MakeMovie:
             new_name = new_image_directory + "/image_" + str(img_num).zfill(5) + ".jpg"
             new_image.save(new_name)
             img_num += 1
-            progress.next()
+            # This pylint disable is only needed on 18.04, not 20.04.
+            progress.next()  # pylint: disable=not-callable
         progress.finish()
 
     # pylint: enable=too-many-locals
