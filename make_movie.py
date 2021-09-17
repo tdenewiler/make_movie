@@ -4,16 +4,13 @@
 """Create a time-lapse movie from a directory of images."""
 
 
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import os
 import subprocess
 from datetime import datetime
 from operator import itemgetter
 import collections
-from PIL import ExifTags, Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from mutagen.mp3 import MP3  # pylint: disable=import-error
 from progress.bar import Bar  # pylint: disable=import-error
 
@@ -28,22 +25,21 @@ class MakeMovie:
             "-s",
             "--source_dir",
             dest="source_directory",
-            help="Directory containing original images. \
-                                  Default to current directory.",
+            help="Directory containing original images. Default to current directory.",
             default=".",
         )
         parser.add_argument(
             "-t",
             "--tmp_dir",
             dest="tmp_directory",
-            help="Directory containing temporary images. " "Default to tmp.",
+            help="Directory containing temporary images. Default to tmp.",
             default="tmp/",
         )
         parser.add_argument(
             "-f",
             "--frame_rate",
             dest="fps",
-            help="Frames per second for the output movie. " "Default to 2.",
+            help="Frames per second for the output movie. Default to 2.",
             default=2,
         )
         parser.add_argument(
@@ -57,14 +53,14 @@ class MakeMovie:
             "-w",
             "--max_width",
             dest="max_width",
-            help="Maximum width of output video. Default to " "1920.",
+            help="Maximum width of output video. Default to 1920.",
             default=1920,
         )
         parser.add_argument(
             "-e",
             "--max_height",
             dest="max_height",
-            help="Maximum height of output video. Default to " "1080.",
+            help="Maximum height of output video. Default to 1080.",
             default=1080,
         )
         parser.add_argument(
@@ -78,8 +74,8 @@ class MakeMovie:
             "-k",
             "--skip",
             dest="skip",
-            help="Skip scaling images and use existing " "temporary images.",
-            default=False,
+            help="Skip scaling images and use existing temporary images.",
+            action="store_true",
         )
         options = parser.parse_args()
         fps = options.fps
@@ -90,24 +86,17 @@ class MakeMovie:
             image_names, options.max_width, options.max_height
         )
         print(
-            "Found {} images and setting resolution to (w, h) = ({}, {}).".format(
-                len(image_names), size[0], size[1]
-            )
+            f"Found {len(image_names)} images and setting resolution to "
+            f"({size[0]}, {size[1]})."
         )
 
         if not options.skip:
-            self.add_border_to_images(
-                image_names, options.source_directory, options.tmp_directory, size
-            )
+            self.add_border_to_images(image_names, options.tmp_directory, size)
 
         if options.music is not None:
             audio = MP3(options.music)
             fps = len(image_names) / audio.info.length
-            print(
-                "Adding soundtrack {}, {}s, {} fps".format(
-                    options.music, audio.info.length, fps
-                )
-            )
+            print(f"Adding soundtrack {options.music}, {audio.info.length}s, {fps} fps")
 
         self.make_movie(fps, options.output_filename, options.tmp_directory)
         if options.music is not None:
@@ -127,40 +116,22 @@ class MakeMovie:
                 size = orig_image.size
                 if size[0] >= size[1]:
                     new_name = new_image_directory + os.path.basename(image)
-                    print("new_name: {}".format(new_name))
+                    print(f"new_name: {new_name}")
                     orig_image.save(new_name)
 
     # Consider using a different library to scale the image more quickly:
     # https://github.com/jbaiter/jpegtran-cffi
     # pylint: disable=too-many-locals
     @classmethod
-    def add_border_to_images(
-        cls, image_list, source_directory, new_image_directory, size
-    ):
+    def add_border_to_images(cls, image_list, new_image_directory, size):
         """Add border to images to make them all the same size."""
         img_num = 1
         progress = Bar("Processing", max=len(image_list))
         for timestamp, image in image_list.items():
             new_image = Image.new("RGB", size)
             orig_image = Image.open(image)
+            orig_image = ImageOps.exif_transpose(orig_image)
             width, height = orig_image.size
-            # Handle some weirdness with image orientation:
-            # https://stackoverflow.com/questions/13872331/rotating-an-image-with-orientation-specified-in-exif-using-python-without-pil-in
-            for orientation in ExifTags.TAGS:
-                if ExifTags.TAGS[orientation] == "Orientation":
-                    break
-            # pylint: disable=protected-access
-            info = dict(orig_image._getexif().items())
-            # pylint: enable=protected-access
-            if orientation in info:
-                if info[orientation] == 3:
-                    orig_image = orig_image.transpose(Image.ROTATE_180)
-                elif info[orientation] == 6:
-                    orig_image = orig_image.transpose(Image.ROTATE_270)
-                    width, height = height, width
-                elif info[orientation] == 8:
-                    orig_image = orig_image.transpose(Image.ROTATE_90)
-                    width, height = height, width
             scale_ratio = 1.0
             if width > size[0] or height > size[1]:
                 scale_ratio = min(size[0] / width, size[1] / height)
@@ -182,7 +153,7 @@ class MakeMovie:
             date = datetime.strptime(timestamp, "%Y%m%d")
             date = date.strftime("%B %d, %Y")
             draw.text((100, 940), date, (255, 255, 255), font=font)
-            new_name = image[len(source_directory) :]  # NOLINT
+            new_name = os.path.basename(image)
             new_name = new_image_directory + "/image_" + str(img_num).zfill(5) + ".jpg"
             new_image.save(new_name)
             img_num += 1
@@ -206,10 +177,8 @@ class MakeMovie:
             if orig_size[1] > max_height:
                 max_height = orig_size[1]
 
-        if max_width > absolute_max_width:
-            max_width = absolute_max_width
-        if max_height > absolute_max_height:
-            max_height = absolute_max_height
+        max_width = min(max_width, absolute_max_width)
+        max_height = min(max_height, absolute_max_height)
 
         return [max_width, max_height]
 
@@ -229,7 +198,7 @@ class MakeMovie:
                 info = current_image._getexif()
                 # pylint: enable=protected-access
                 if info is None:
-                    print("{} has no metadata information.".format(filename))
+                    print(f"{filename} has no metadata information.")
                     continue
                 if 36867 in info:
                     timestamp = str(info[36867]).replace(":", "")[:-7].upper()
@@ -239,7 +208,7 @@ class MakeMovie:
                     try:
                         timestamp = str(info[306]).replace(":", "")[:-7].upper()
                     except KeyError as exc:
-                        print("Exception for {}: {}".format(filename, exc))
+                        print(f"Exception for {filename}: {exc}")
                         continue
                 image_names[timestamp] = source_dir + filename
 
@@ -252,7 +221,7 @@ class MakeMovie:
     def make_movie(cls, fps, output_filename, img_dir):
         """Create a movie using images in a specified directory."""
         command = (
-            "avconv",
+            "ffmpeg",
             "-r",
             str(fps),
             "-i",
@@ -262,7 +231,7 @@ class MakeMovie:
             output_filename,
         )
 
-        print("\nabout to execute:\n%s\n" % " ".join(command))
+        print(f"\nabout to execute:\n{command}\n")
         subprocess.check_call(command)
 
     @classmethod
@@ -280,7 +249,7 @@ class MakeMovie:
         id3cp 1.mp3 all.mp3
         """
         command = (
-            "avconv",
+            "ffmpeg",
             "-i",
             output_filename,
             "-i",
@@ -296,7 +265,7 @@ class MakeMovie:
             "music-" + output_filename,
         )
 
-        print("\nabout to execute:\n%s\n" % " ".join(command))
+        print(f"\nabout to execute:\n{command}\n")
         subprocess.check_call(command)
 
 
