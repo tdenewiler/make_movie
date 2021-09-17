@@ -13,10 +13,12 @@ rate to fill the song.
 
 ## Dependencies
 
-To install dependencies use the following:
+Development and usage should occur in a [virtual environment].
 
 ```shell
-sudo -H pip install -r requirements.txt
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
 cat install.txt | xargs sudo apt install
 ```
 
@@ -33,3 +35,5 @@ mp3wrap output.mp3 input-1.mp3 input-2.mp3 input-3.mp3
 If `mp3wrap` does not work you can try Audacity.
 Some instructions that worked for me are at
 <https://www.how2shout.com/how-to/merge-multiple-audio-files-to-one-using-audacity.html>.
+
+[virtual environment]: https://docs.python.org/3/library/venv.html
