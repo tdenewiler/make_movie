@@ -2,6 +2,7 @@
 levels:
   local:
     discovery:
+      - markdown
       - python
     reporting:
       - print_to_console
@@ -10,6 +11,8 @@ levels:
         flags: ""
       docformatter:
         flags: "--wrap-summaries 88 --wrap-descriptions 88"
+      markdownlint:
+        flags: ""
       pycodestyle:
         # Make line length consistent with default for black.
         flags: "--max-line-length=88"
