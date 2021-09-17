@@ -46,7 +46,7 @@ class RenameFileWithDateTime:
         if num_files > 0:
             self.create_files(source_dir, new_image_directory)
         else:
-            print("No files in {}".format(source_dir))
+            print(f"No files in {source_dir}")
 
     def create_files(self, source_dir, tmp_dir):
         """Create the files using metadata."""
@@ -61,7 +61,7 @@ class RenameFileWithDateTime:
     @classmethod
     def create_file(cls, filename, source_dir, tmp_dir):
         """Create individaul files using metadata."""
-        print("Opening {}".format(filename))
+        print(f"Opening {filename}")
         if os.path.isfile(source_dir + filename):
             current_image = Image.open(source_dir + filename)
             # pylint: disable=W0212
@@ -69,7 +69,7 @@ class RenameFileWithDateTime:
             # pylint: enable=W0212
             if 36867 in info:
                 if info[272] == "HTC6525LVW":
-                    print("info[36867] =", info[36867])
+                    print(f"info[36867] = {info[36867]}")
                     new_filename = str(info[36867]).replace(":", "").upper()
                     new_filename = new_filename.replace(" ", "_")
                 else:
@@ -81,19 +81,13 @@ class RenameFileWithDateTime:
             else:
                 new_filename = str(info[306]).replace(":", "")[:-7].upper()
             new_filename = tmp_dir + "/" + "IMG_" + new_filename + ".jpg"
-            print(
-                "Original filename = {}, new filename = "
-                "{}".format(filename, new_filename)
-            )
+            print(f"Original filename = {filename}, new filename = {new_filename}")
             try:
                 copyfile(source_dir + "/" + filename, new_filename)
             except IOError:
-                print(
-                    "Exception caught renaming {} --> "
-                    "{}".format(filename, new_filename)
-                )
+                print(f"Exception renaming {filename} to {new_filename}")
         else:
-            print("{} is not a file, skipping".format(filename))
+            print("{filename} is not a file, skipping.")
         print("*****")
 
 
