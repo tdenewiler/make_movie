@@ -57,6 +57,10 @@ jobs:
           sudo npm install -g markdownlint-cli@0.21.0
           rm nodesource_setup.sh
 
+      - name: Test with mypy
+        run: |
+          mypy --ignore-missing-imports --strict make_movie.py
+
       - name: Statick
         run: |
           statick . --check --user-paths statick_config --log info
