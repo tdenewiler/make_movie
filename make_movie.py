@@ -80,9 +80,9 @@ class MakeMovie:
         options = parser.parse_args()
         fps = options.fps
 
-        image_names = self.get_image_names(options.source_directory)
+        image_names = MakeMovie.get_image_names(options.source_directory)
 
-        size = self.get_max_image_resolution(
+        size = MakeMovie.get_max_image_resolution(
             image_names, options.max_width, options.max_height
         )
         print(
@@ -91,16 +91,16 @@ class MakeMovie:
         )
 
         if not options.skip:
-            self.add_border_to_images(image_names, options.tmp_directory, size)
+            MakeMovie.add_border_to_images(image_names, options.tmp_directory, size)
 
         if options.music is not None:
             audio = MP3(options.music)
             fps = len(image_names) / audio.info.length
             print(f"Adding soundtrack {options.music}, {audio.info.length}s, {fps} fps")
 
-        self.make_movie(fps, options.output_filename, options.tmp_directory)
+        MakeMovie.make_movie(fps, options.output_filename, options.tmp_directory)
         if options.music is not None:
-            self.add_music(options.output_filename, options.music)
+            MakeMovie.add_music(options.output_filename, options.music)
 
     @classmethod
     def save_landscape_images(cls, source_dir, new_image_directory):
@@ -119,33 +119,13 @@ class MakeMovie:
                     print(f"new_name: {new_name}")
                     orig_image.save(new_name)
 
-    # Consider using a different library to scale the image more quickly:
-    # https://github.com/jbaiter/jpegtran-cffi
-    # pylint: disable=too-many-locals
     @classmethod
     def add_border_to_images(cls, image_list, new_image_directory, size):
         """Add border to images to make them all the same size."""
         img_num = 1
         progress = Bar("Processing", max=len(image_list))
         for timestamp, image in image_list.items():
-            new_image = Image.new("RGB", size)
-            orig_image = Image.open(image)
-            orig_image = ImageOps.exif_transpose(orig_image)
-            width, height = orig_image.size
-            scale_ratio = 1.0
-            if width > size[0] or height > size[1]:
-                scale_ratio = min(size[0] / width, size[1] / height)
-                orig_image = orig_image.resize(
-                    ((int(width * scale_ratio)), int(height * scale_ratio)),
-                    Image.BICUBIC,
-                )
-            new_image.paste(
-                orig_image,
-                (
-                    int((size[0] - width * scale_ratio) / 2),
-                    int((size[1] - height * scale_ratio) / 2),
-                ),
-            )
+            new_image = MakeMovie.scale_image(image, size)
             draw = ImageDraw.Draw(new_image)
             font = ImageFont.truetype(
                 "/usr/share/fonts/truetype/freefont/FreeSans.ttf", 120
@@ -161,7 +141,31 @@ class MakeMovie:
             progress.next()  # pylint: disable=not-callable
         progress.finish()
 
-    # pylint: enable=too-many-locals
+    # Consider using a different library to scale the image more quickly:
+    # https://github.com/jbaiter/jpegtran-cffi
+    @classmethod
+    def scale_image(cls, image, size):
+        """Scale image to specified size."""
+        new_image = Image.new("RGB", size)
+        orig_image = Image.open(image)
+        orig_image = ImageOps.exif_transpose(orig_image)
+        width, height = orig_image.size
+        scale_ratio = 1.0
+        if width > size[0] or height > size[1]:
+            scale_ratio = min(size[0] / width, size[1] / height)
+            orig_image = orig_image.resize(
+                ((int(width * scale_ratio)), int(height * scale_ratio)),
+                Image.BICUBIC,
+            )
+        new_image.paste(
+            orig_image,
+            (
+                int((size[0] - width * scale_ratio) / 2),
+                int((size[1] - height * scale_ratio) / 2),
+            ),
+        )
+
+        return new_image
 
     @classmethod
     def get_max_image_resolution(
