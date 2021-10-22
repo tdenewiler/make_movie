@@ -10,6 +10,8 @@ import subprocess
 from datetime import datetime
 from operator import itemgetter
 import collections
+from typing import Dict, List
+
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from mutagen.mp3 import MP3  # pylint: disable=import-error
 from progress.bar import Bar  # pylint: disable=import-error
@@ -18,7 +20,7 @@ from progress.bar import Bar  # pylint: disable=import-error
 class MakeMovie:
     """Make a movie using image files."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Get options and start making a movie."""
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -103,7 +105,7 @@ class MakeMovie:
             MakeMovie.add_music(options.output_filename, options.music)
 
     @classmethod
-    def save_landscape_images(cls, source_dir, new_image_directory):
+    def save_landscape_images(cls, source_dir: str, new_image_directory: str) -> None:
         """Save any images that are in landscape mode (width > height)."""
         valid_extensions = ["png", "jpg"]
         for _, _, files in os.walk(source_dir):
@@ -120,7 +122,9 @@ class MakeMovie:
                     orig_image.save(new_name)
 
     @classmethod
-    def add_border_to_images(cls, image_list, new_image_directory, size):
+    def add_border_to_images(
+        cls, image_list: Dict[str, str], new_image_directory: str, size: List[int]
+    ) -> None:
         """Add border to images to make them all the same size."""
         img_num = 1
         progress = Bar("Processing", max=len(image_list))
@@ -131,8 +135,8 @@ class MakeMovie:
                 "/usr/share/fonts/truetype/freefont/FreeSans.ttf", 120
             )
             date = datetime.strptime(timestamp, "%Y%m%d")
-            date = date.strftime("%B %d, %Y")
-            draw.text((100, 940), date, (255, 255, 255), font=font)
+            formatted_date = date.strftime("%B %d, %Y")
+            draw.text((100, 940), formatted_date, (255, 255, 255), font=font)
             new_name = os.path.basename(image)
             new_name = new_image_directory + "/image_" + str(img_num).zfill(5) + ".jpg"
             new_image.save(new_name)
@@ -144,7 +148,7 @@ class MakeMovie:
     # Consider using a different library to scale the image more quickly:
     # https://github.com/jbaiter/jpegtran-cffi
     @classmethod
-    def scale_image(cls, image, size):
+    def scale_image(cls, image: str, size: List[int]) -> Image:
         """Scale image to specified size."""
         new_image = Image.new("RGB", size)
         orig_image = Image.open(image)
@@ -169,8 +173,11 @@ class MakeMovie:
 
     @classmethod
     def get_max_image_resolution(
-        cls, image_list, absolute_max_width, absolute_max_height
-    ):
+        cls,
+        image_list: Dict[str, str],
+        absolute_max_width: int,
+        absolute_max_height: int,
+    ) -> List[int]:
         """From a list of images find the maximum height and width."""
         max_height = 0
         max_width = 0
@@ -188,7 +195,7 @@ class MakeMovie:
         return [max_width, max_height]
 
     @classmethod
-    def get_image_names(cls, source_dir):
+    def get_image_names(cls, source_dir: str) -> Dict[str, str]:
         """Get the filenames of images in a directory."""
         valid_extensions = ["png", "jpg"]
         image_names = {}
@@ -223,7 +230,7 @@ class MakeMovie:
         return image_names_sorted
 
     @classmethod
-    def make_movie(cls, fps, output_filename, img_dir):
+    def make_movie(cls, fps: float, output_filename: str, img_dir: str) -> None:
         """Create a movie using images in a specified directory."""
         command = (
             "ffmpeg",
@@ -240,7 +247,7 @@ class MakeMovie:
         subprocess.check_call(command)
 
     @classmethod
-    def add_music(cls, output_filename, music):
+    def add_music(cls, output_filename: str, music: str) -> None:
         """Add a song as background music for video.
 
         To make a longer song I like to merge my kids favorite songs together.
